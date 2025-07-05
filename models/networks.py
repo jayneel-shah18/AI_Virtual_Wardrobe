@@ -53,29 +53,32 @@ def define_G(input_nc, output_nc, ngf, netG, L=1, S=1, n_downsample_global=3, n_
         raise ('generator not implemented!')
     print(netG)
     if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        netG.cuda(gpu_ids[0])
+        assert (torch.is_available())
+        netG(gpu_ids[0])
     netG.apply(weights_init)
     return netG
 
 
 def define_Unet(input_nc, gpu_ids=[]):
     netG = Unet(input_nc)
-    netG.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torch.is_available():
+        netG = netG(gpu_ids[0])
     netG.apply(weights_init)
     return netG
 
 
 def define_UnetMask(input_nc, gpu_ids=[]):
     netG = UnetMask(input_nc, output_nc=4)
-    netG.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torch.is_available():
+        netG = netG(gpu_ids[0])
     netG.apply(weights_init)
     return netG
 
 
 def define_Refine(input_nc, output_nc, gpu_ids=[]):
     netG = Refine(input_nc, output_nc)
-    netG.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torch.is_available():
+        netG = netG(gpu_ids[0])
     netG.apply(weights_init)
     return netG
 
@@ -86,8 +89,8 @@ def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_
         input_nc, ndf, n_layers_D, norm_layer, use_sigmoid, num_D, getIntermFeat)
     print(netD)
     if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        netD.cuda(gpu_ids[0])
+        assert (torch.is_available())
+        netD(gpu_ids[0])
     netD.apply(weights_init)
     return netD
 
@@ -95,30 +98,28 @@ def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_
 def define_VAE(input_nc, gpu_ids=[]):
     netVAE = VAE(19, 32, 32, 1024)
     print(netVAE)
-    if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        netVAE.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torch.is_available():
+        netVAE = netVAE(gpu_ids[0])
     return netVAE
+
 
 
 def define_B(input_nc, output_nc, ngf, n_downsample_global=3, n_blocks_global=3, norm='instance', gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
-    netB = BlendGenerator(input_nc, output_nc, ngf,
-                          n_downsample_global, n_blocks_global, norm_layer)
+    netB = BlendGenerator(input_nc, output_nc, ngf, n_downsample_global, n_blocks_global, norm_layer)
     print(netB)
-    if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        netB.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torchis_available():
+        netB = netB(gpu_ids[0])
     netB.apply(weights_init)
     return netB
+
 
 
 def define_partial_enc(input_nc, gpu_ids=[]):
     net = PartialConvEncoder(input_nc)
     print(net)
-    if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        net.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torchis_available():
+        net = net(gpu_ids[0])
     net.apply(weights_init)
     return net
 
@@ -126,9 +127,8 @@ def define_partial_enc(input_nc, gpu_ids=[]):
 def define_conv_enc(input_nc, gpu_ids=[]):
     net = ConvEncoder(input_nc)
     print(net)
-    if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        net.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torch.is_available():
+        net = net(gpu_ids[0])
     net.apply(weights_init)
     return net
 
@@ -136,11 +136,11 @@ def define_conv_enc(input_nc, gpu_ids=[]):
 def define_AttG(output_nc, gpu_ids=[]):
     net = AttGenerator(output_nc)
     print(net)
-    if len(gpu_ids) > 0:
-        assert (torch.cuda.is_available())
-        net.cuda(gpu_ids[0])
+    if len(gpu_ids) > 0 and torch.is_available():
+        net = net(gpu_ids[0])
     net.apply(weights_init)
     return net
+
 
 
 def print_network(net):
@@ -206,7 +206,10 @@ class GANLoss(nn.Module):
 class VGGLossWarp(nn.Module):
     def __init__(self, gpu_ids):
         super(VGGLossWarp, self).__init__()
-        self.vgg = Vgg19().cuda()
+        self.vgg = Vgg19()
+        if torch.is_available():
+            self.vgg = self.vgg
+
         self.criterion = nn.L1Loss()
         self.weights = [1.0 / 32, 1.0 / 16, 1.0 / 8, 1.0 / 4, 1.0]
 
@@ -220,7 +223,9 @@ class VGGLossWarp(nn.Module):
 class VGGLoss(nn.Module):
     def __init__(self, gpu_ids):
         super(VGGLoss, self).__init__()
-        self.vgg = Vgg19().cuda()
+        self.vgg = Vgg19()
+        if torch.is_available():
+            self.vgg = self.vgg
         self.criterion = nn.L1Loss()
         self.weights = [1.0 / 32, 1.0 / 16, 1.0 / 8, 1.0 / 4, 1.0]
 
@@ -242,7 +247,10 @@ class VGGLoss(nn.Module):
 class StyleLoss(nn.Module):
     def __init__(self, gpu_ids):
         super(StyleLoss, self).__init__()
-        self.vgg = Vgg19().cuda()
+        self.vgg = Vgg19()
+        if torch.is_available():
+            self.vgg = self.vgg
+
         self.weights = [1.0 / 32, 1.0 / 16, 1.0 / 8, 1.0 / 4, 1.0]
 
     def forward(self, x, y):
@@ -1120,7 +1128,7 @@ class VAE(nn.Module):
     def reparametrize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
         # if self.cuda:
-        eps = torch.cuda.FloatTensor(std.size()).normal_()
+        eps = torch.FloatTensor(std.size()).normal_()
         # else:
         #    eps = torch.FloatTensor(std.size()).normal_()
         eps = Variable(eps)
@@ -1580,8 +1588,8 @@ class BoundedGridLocNet(nn.Module):
         # coor+=torch.randn(coor.shape).cuda()/10
         row = self.get_row(coor, 5)
         col = self.get_col(coor, 5)
-        rx, ry, cx, cy = torch.tensor(0.08).cuda(), torch.tensor(
-            0.08).cuda(), torch.tensor(0.08).cuda(), torch.tensor(0.08).cuda()
+        rx, ry, cx, cy = torch.tensor(0.08), torch.tensor(
+            0.08), torch.tensor(0.08), torch.tensor(0.08)
         row_x, row_y = row[:, :, 0], row[:, :, 1]
         col_x, col_y = col[:, :, 0], col[:, :, 1]
         rx_loss = torch.max(rx, row_x).mean()
