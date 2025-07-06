@@ -64,7 +64,7 @@ def changearm(old_label):
 def main():
     os.makedirs('sample', exist_ok=True)
     opt = TestOptions().parse()
-    opt.checkpoints_dir = "C:/Users/Smiti/Downloads/AIVirtual/AI_Virtual_Wardrobe/checkpoints"
+    opt.checkpoints_dir = "AI_Virtual_Wardrobe/checkpoints"
     opt.name = "label2city"
 
     # Force CPU mode if CUDA not available
