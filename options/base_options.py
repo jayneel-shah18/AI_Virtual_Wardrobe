@@ -99,7 +99,7 @@ class BaseOptions():
         if torch.cuda.is_available() and len(self.opt.gpu_ids) > 0:
             torch.cuda.set_device(self.opt.gpu_ids[0])
         elif len(self.opt.gpu_ids) > 0:
-            print("⚠️ CUDA not available. Falling back to CPU despite GPU ID being set.")
+            print("WARNING: CUDA not available. Falling back to CPU despite GPU ID being set.")
 
         args = vars(self.opt)
 
